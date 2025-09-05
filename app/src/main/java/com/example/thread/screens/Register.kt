@@ -64,6 +64,7 @@ fun Register(navController: NavHostController) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val authViewModel: AuthViewModel = viewModel()
     val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
+    val upLoadStatus = authViewModel.uploadState.observeAsState()
 
     val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         android.Manifest.permission.READ_MEDIA_IMAGES
@@ -85,6 +86,10 @@ fun Register(navController: NavHostController) {
                 Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
             }
         }
+
+    LaunchedEffect(upLoadStatus) {
+        Toast.makeText(context, "Image uploaded in cloudinary", Toast.LENGTH_SHORT).show()
+    }
 
 
     LaunchedEffect(firebaseUser) {
