@@ -1,60 +1,87 @@
 package com.example.thread.viewModel
 
+import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
+import android.net.Uri
+import androidx.annotation.OptIn
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
+import com.example.thread.application.CloudinaryManager.UploadState
 import com.example.thread.model.ThreadModel
-import com.google.android.gms.cast.tv.media.MediaManager
+import com.example.thread.utils.Constants
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-class AddThreadViewModel : ViewModel() {
-    private val db = FirebaseDatabase.getInstance()
-    val usersRef = db.getReference("Threads")
+class AddThreadViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _firebaseUser = MutableLiveData<FirebaseUser?>()
-
-
+    private val auth = FirebaseAuth.getInstance()
     private var _isPosted = MutableLiveData<Boolean>()
-    val isPosted: LiveData<Boolean> = _isPosted
+    var isPosted: LiveData<Boolean> = _isPosted
+    private val db = FirebaseDatabase.getInstance()
+    val usersRef = db.getReference("Users")
+    private val _firebaseUser = MutableLiveData<FirebaseUser?>()
+    val firebaseUser: MutableLiveData<FirebaseUser?> = _firebaseUser
+
+    @SuppressLint("StaticFieldLeak")
+    private lateinit var context: Context
+    private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
+    val uplaodState: StateFlow<UploadState> = _uploadState
 
 
-    fun saveImage(
-        thread: String,
-        uid: String?,
-        imageUri: String
-    ) {
-        val threadData = ThreadModel(thread, imageUri, uid, System.currentTimeMillis().toString())
+    fun uploadThread(imageUri: Uri, thread: String, userId: String) {
+        _uploadState.value = UploadState.Loading
+        MediaManager.get().upload(imageUri)
+            .unsigned("Threads") // unsigned preset from Cloudinary
+            .option("folder", "Users/$userId/Threads") // 🔹 organized folder structure
+            .callback(object : UploadCallback {
+                override fun onStart(requestId: String) {}
 
-        usersRef.child(usersRef.push().key!!).setValue(threadData).addOnSuccessListener {
-            _isPosted.postValue(true)
-        }.addOnFailureListener {
-            _isPosted.postValue(false)
-        }
+                override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
+                    val progress = (bytes * 100 / totalBytes).toInt()
+                    _uploadState.value = UploadState.Progress(progress)
+                }
 
-        /* MediaManager.upload(imageUri)
-             .option("uid", uid) // Use a meaningful public ID
-             .option("thread", thread)
-             .option("timestamp", System.currentTimeMillis().toString())// Use a meaningful public ID
-             .dispatch()
+                @UnstableApi
+                override fun onSuccess(requestId: String, resultData: Map<Any?, Any?>) {
+                    val imageUrl = resultData["secure_url"] as? String ?: ""
+                    val publicId = resultData["public_id"] as? String ?: ""
 
-         */
+                    saveImageToFireBase(thread, userId, imageUrl)
 
+                    _uploadState.value = UploadState.Success(imageUrl, publicId)
+                }
+
+                override fun onError(requestId: String, error: ErrorInfo) {
+                    _uploadState.value = UploadState.Error(error.description)
+                }
+
+                override fun onReschedule(requestId: String, error: ErrorInfo) {
+                    _uploadState.value = UploadState.Error("Rescheduled: ${error.description}")
+                }
+            }).dispatch()
     }
 
-    fun saveData(
-        thread: String,
-        uid: String?,
-        imageUri: String,
-    ) {
+    @OptIn(UnstableApi::class)
+    private fun saveImageToFireBase(thread: String, userId: String?, imageUri: String) {
+        val threadData =
+            ThreadModel(thread, imageUri, userId, System.currentTimeMillis().toString())
+        usersRef.child(userId!!).child(Constants.THREADS).push().setValue(threadData)
+            .addOnCompleteListener {
 
-        val threadData = ThreadModel(thread, imageUri, uid, System.currentTimeMillis().toString())
+            }.addOnFailureListener {
 
-        usersRef.child(usersRef.push().key!!).setValue(threadData).addOnSuccessListener {
-            _isPosted.postValue(true)
-        }.addOnFailureListener {
-            _isPosted.postValue(false)
-        }
+            }
+
     }
 
 

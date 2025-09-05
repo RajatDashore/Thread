@@ -49,7 +49,7 @@ class UserViewModel : ViewModel() {
                 }
 
                 override fun onCancelled(p0: DatabaseError) {
-                    TODO("Not yet implemented")
+
                 }
 
             })

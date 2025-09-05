@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import com.example.thread.R
 import com.example.thread.itemView.ThreadItem
 import com.example.thread.model.UserModel
@@ -51,10 +52,11 @@ fun Profile(navHostController: NavHostController) {
     val follower by otherUserViewModel.followerCount.observeAsState(0)
     val follewing by otherUserViewModel.followingCount.observeAsState(0)
     val context = LocalContext.current
+
     val user = UserModel(
         name = SharedPref.getName(context),
         username = SharedPref.getUserName(context),
-        imageUri = SharedPref.getImage(context)
+        imageUri = SharedPref.getImage(context),
     )
 
 
@@ -85,14 +87,17 @@ fun Profile(navHostController: NavHostController) {
                 val (text, logo, userName, bio, followers, following, imageBox, LogButton) = createRefs()
 
 
-                Text(text = SharedPref.getName(context), style = TextStyle(
-                    fontWeight = FontWeight.Bold, fontSize = 24.sp
-                ), modifier = Modifier.constrainAs(text) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                })
+                Text(
+                    text = SharedPref.getName(context), style = TextStyle(
+                        fontWeight = FontWeight.Bold, fontSize = 24.sp
+                    ), modifier = Modifier.constrainAs(text) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                    })
 
-                Image(painter = painterResource(R.drawable.baseline_person_24),
+
+                AsyncImage(
+                    model = user.imageUri,
                     contentDescription = "Logo",
                     modifier = Modifier
                         .constrainAs(logo) {
@@ -103,33 +108,37 @@ fun Profile(navHostController: NavHostController) {
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop)
 
-                Text(text = SharedPref.getUserName(context), style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(userName) {
-                    top.linkTo(text.bottom)
-                    start.linkTo(parent.start)
-                })
+                Text(
+                    text = SharedPref.getUserName(context), style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(userName) {
+                        top.linkTo(text.bottom)
+                        start.linkTo(parent.start)
+                    })
 
-                Text(text = SharedPref.getBio(context), style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(bio) {
-                    top.linkTo(userName.bottom)
-                    start.linkTo(parent.start)
-                })
+                Text(
+                    text = SharedPref.getBio(context), style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(bio) {
+                        top.linkTo(userName.bottom)
+                        start.linkTo(parent.start)
+                    })
 
-                Text(text = "$follower followers", style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(followers) {
-                    top.linkTo(bio.bottom)
-                    start.linkTo(parent.start)
-                })
-                Text(text = "$follewing following", style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(following) {
-                    top.linkTo(followers.bottom)
-                    start.linkTo(parent.start)
+                Text(
+                    text = "$follower followers", style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(followers) {
+                        top.linkTo(bio.bottom)
+                        start.linkTo(parent.start)
+                    })
+                Text(
+                    text = "$follewing following", style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(following) {
+                        top.linkTo(followers.bottom)
+                        start.linkTo(parent.start)
 
-                })
+                    })
 
 
                 Column(modifier = Modifier.constrainAs(LogButton) {
@@ -139,7 +148,10 @@ fun Profile(navHostController: NavHostController) {
                     Box(modifier = Modifier.height(8.dp)) {}
 
                     ElevatedButton(
-                        onClick = { authViewModel.logout() },
+                        onClick = {
+                            authViewModel.logout()
+                            SharedPref.removeUserInfoFormSharedPref(context)
+                        },
                         modifier = Modifier
                             .padding(top = 5.dp)
                     ) {

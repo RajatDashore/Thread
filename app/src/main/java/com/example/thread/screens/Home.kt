@@ -1,8 +1,10 @@
 package com.example.thread.screens
 
+import android.util.Log
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
@@ -16,16 +18,26 @@ import com.google.firebase.auth.FirebaseAuth
 fun Home(navHostController: NavHostController) {
     val context = LocalContext.current
     val homeViewModel: HomeViewModel = viewModel()
-    val threadAndUsers by homeViewModel.threadsAndUsers.observeAsState(null)
+    val TAG = "SHOWIMAGE"
+    val userThreads by homeViewModel.userThreads.observeAsState(emptyList())
+
+
+    LaunchedEffect(Unit) {
+        homeViewModel.fetchUsersAndThreads()
+    }
 
     LazyColumn {
-        items(threadAndUsers ?: emptyList()) { pairs ->
-            ThreadItem(
-                thread = pairs.first,
-                users = pairs.second,
-                navHostController,
-                FirebaseAuth.getInstance().currentUser!!.uid
-            )
+        userThreads.forEach { userWithThreads ->
+            items(userWithThreads.threads) { thread ->
+                ThreadItem(
+                    thread = thread,
+                    users = userWithThreads.user,
+                    navHostController,
+                    userId = userWithThreads.user.uid!!
+                )
+
+            }
+
         }
     }
 

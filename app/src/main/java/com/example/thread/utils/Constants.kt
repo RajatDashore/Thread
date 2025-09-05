@@ -1,0 +1,6 @@
+package com.example.thread.utils
+
+object Constants {
+    const val THREADS = "Threads"
+    const val USERS = "Users"
+}

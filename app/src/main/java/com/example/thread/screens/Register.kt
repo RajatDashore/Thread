@@ -55,6 +55,7 @@ import com.example.thread.viewModel.AuthViewModel
 
 @Composable
 fun Register(navController: NavHostController) {
+    val context = LocalContext.current
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
@@ -75,11 +76,13 @@ fun Register(navController: NavHostController) {
             imageUri = uri
         }
     val permissionLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
             if (isGranted) {
-
+                Toast.makeText(context, "Permission granted", Toast.LENGTH_SHORT).show()
             } else {
-
+                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
             }
         }
 

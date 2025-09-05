@@ -25,6 +25,12 @@ object SharedPref {
 
     }
 
+    fun removeUserInfoFormSharedPref(context: Context){
+        val sharedPref = context.getSharedPreferences("Users", Context.MODE_PRIVATE)
+        sharedPref.edit().clear().apply()
+
+    }
+
 
     fun getUserName(context: Context): String {
         val sharedPreferences = context.getSharedPreferences("Users", MODE_PRIVATE)

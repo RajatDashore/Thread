@@ -1,6 +1,5 @@
 package com.example.thread.screens
 
-import android.R.style
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -101,7 +100,8 @@ fun AddThread(navHostController: NavHostController) {
 
         val (crossPic, text, logo, userName, editText, attachMedia, replyText, button, imageBox) = createRefs()
 
-        Image(painter = painterResource(id = R.drawable.baseline_close_24),
+        Image(
+            painter = painterResource(id = R.drawable.baseline_close_24),
             contentDescription = "Close",
             modifier = Modifier
                 .constrainAs(crossPic) {
@@ -115,15 +115,18 @@ fun AddThread(navHostController: NavHostController) {
                         }
                     }
                 })
-        Text(text = "Add Thread", style = TextStyle(
-            fontWeight = FontWeight.ExtraBold, fontSize = 24.sp
-        ), modifier = Modifier.constrainAs(text) {
-            top.linkTo(crossPic.top)
-            start.linkTo(crossPic.end, margin = 12.dp)
-            bottom.linkTo(crossPic.bottom)
-        })
 
-        Image(painter = rememberAsyncImagePainter(model = SharedPref.getImage(context)),
+        Text(
+            text = "Add Thread", style = TextStyle(
+                fontWeight = FontWeight.ExtraBold, fontSize = 24.sp
+            ), modifier = Modifier.constrainAs(text) {
+                top.linkTo(crossPic.top)
+                start.linkTo(crossPic.end, margin = 12.dp)
+                bottom.linkTo(crossPic.bottom)
+            })
+
+        Image(
+            painter = rememberAsyncImagePainter(model = SharedPref.getImage(context)),
             contentDescription = "Logo",
             modifier = Modifier
                 .constrainAs(logo) {
@@ -134,15 +137,18 @@ fun AddThread(navHostController: NavHostController) {
                 .clip(CircleShape),
             contentScale = ContentScale.Crop)
 
-        Text(text = SharedPref.getUserName(context), style = TextStyle(
-            fontSize = 20.sp
-        ), modifier = Modifier.constrainAs(userName) {
-            top.linkTo(logo.top)
-            start.linkTo(logo.end, margin = 12.dp)
-            bottom.linkTo(logo.bottom)
-        })
 
-        basicTextFieldWithHint(hint = "Start a thread...",
+        Text(
+            text = SharedPref.getUserName(context), style = TextStyle(
+                fontSize = 20.sp
+            ), modifier = Modifier.constrainAs(userName) {
+                top.linkTo(logo.top)
+                start.linkTo(logo.end, margin = 12.dp)
+                bottom.linkTo(logo.bottom)
+            })
+
+        basicTextFieldWithHint(
+            hint = "Start a thread...",
             value = thread,
             onValuesChange = { thread = it },
             modifier = Modifier
@@ -151,8 +157,11 @@ fun AddThread(navHostController: NavHostController) {
                     start.linkTo(userName.start)
                 }
                 .padding(horizontal = 8.dp, vertical = 8.dp))
+
+
         if (imageUri == null) {
-            Image(painter = painterResource(id = R.drawable.baseline_attach_file_24),
+            Image(
+                painter = painterResource(id = R.drawable.baseline_attach_file_24),
                 contentDescription = "Attach file",
                 modifier = Modifier
                     .constrainAs(attachMedia) {
@@ -172,24 +181,26 @@ fun AddThread(navHostController: NavHostController) {
                         }
                     })
         } else {
-            Box(modifier = Modifier
-                .background(Color.Gray)
-                .padding(11.dp)
-                .constrainAs(imageBox) {
-                    top.linkTo(editText.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-                .height(250.dp)) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Gray)
+                    .padding(11.dp)
+                    .constrainAs(imageBox) {
+                        top.linkTo(editText.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    }
+                    .height(250.dp)) {
                 Image(
                     painter = rememberAsyncImagePainter(model = imageUri),
-                    contentDescription = "Logo",
+                    contentDescription = "close",
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(),
                     contentScale = ContentScale.Crop
                 )
-                Icon(imageVector = Icons.Default.Close,
+                Icon(
+                    imageVector = Icons.Default.Close,
                     contentDescription = "Remove Image",
                     modifier = Modifier
                         .align(
@@ -202,23 +213,16 @@ fun AddThread(navHostController: NavHostController) {
             }
 
         }
-        Text(text = "Anyone can reply", style = TextStyle(
-            fontSize = 20.sp
-        ), modifier = Modifier.constrainAs(replyText) {
-            start.linkTo(parent.start, margin = 12.dp)
-            bottom.linkTo(parent.bottom, margin = 12.dp)
-        })
+        Text(
+            text = "Anyone can reply", style = TextStyle(
+                fontSize = 20.sp
+            ), modifier = Modifier.constrainAs(replyText) {
+                start.linkTo(parent.start, margin = 12.dp)
+                bottom.linkTo(parent.bottom, margin = 12.dp)
+            })
 
         TextButton(onClick = {
-            if (imageUri == null) {
-                threadViewModel.saveData(thread, FirebaseAuth.getInstance().currentUser!!.uid, "")
-            } else {
-                threadViewModel.saveImage(
-                    thread,
-                    FirebaseAuth.getInstance().currentUser!!.uid,
-                    imageUri!!.toString()
-                )
-            }
+            threadViewModel.uploadThread(imageUri!!,thread, FirebaseAuth.getInstance().currentUser!!.uid)
 
         }, modifier = Modifier.constrainAs(button) {
             end.linkTo(parent.end)

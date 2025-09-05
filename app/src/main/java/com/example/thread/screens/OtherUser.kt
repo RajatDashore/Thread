@@ -93,18 +93,20 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
                 val (text, logo, userName, bio, followers, following, LogButton) = createRefs()
 
 
-                Text(text = users?.name ?: "Unknown User", style = TextStyle(
-                    fontWeight = FontWeight.Bold, fontSize = 24.sp
-                ), modifier = Modifier.constrainAs(text) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                })
+                Text(
+                    text = users?.name ?: "Unknown User", style = TextStyle(
+                        fontWeight = FontWeight.Bold, fontSize = 24.sp
+                    ), modifier = Modifier.constrainAs(text) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                    })
                 val painter = if (users?.imageUri != null) {
                     rememberAsyncImagePainter(users?.imageUri)
                 } else {
                     painterResource(id = R.drawable.baseline_person_24)
                 }
-                Image(painter = painter,
+                Image(
+                    painter = painter,
                     contentDescription = "Logo",
                     modifier = Modifier
                         .constrainAs(logo) {
@@ -115,33 +117,37 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop)
 
-                Text(text = users?.username ?: "Unknown UserName", style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(userName) {
-                    top.linkTo(text.bottom)
-                    start.linkTo(parent.start)
-                })
+                Text(
+                    text = users?.username ?: "Unknown UserName", style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(userName) {
+                        top.linkTo(text.bottom)
+                        start.linkTo(parent.start)
+                    })
 
-                Text(text = users?.bio ?: "Unknown Bio", style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(bio) {
-                    top.linkTo(userName.bottom)
-                    start.linkTo(parent.start)
-                })
+                Text(
+                    text = users?.bio ?: "Unknown Bio", style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(bio) {
+                        top.linkTo(userName.bottom)
+                        start.linkTo(parent.start)
+                    })
 
-                Text(text = "$follower followers", style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(followers) {
-                    top.linkTo(bio.bottom)
-                    start.linkTo(parent.start)
-                })
-                Text(text = "$follewing following", style = TextStyle(
-                    fontSize = 20.sp
-                ), modifier = Modifier.constrainAs(following) {
-                    top.linkTo(followers.bottom)
-                    start.linkTo(parent.start)
+                Text(
+                    text = "$follower followers", style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(followers) {
+                        top.linkTo(bio.bottom)
+                        start.linkTo(parent.start)
+                    })
+                Text(
+                    text = "$follewing following", style = TextStyle(
+                        fontSize = 20.sp
+                    ), modifier = Modifier.constrainAs(following) {
+                        top.linkTo(followers.bottom)
+                        start.linkTo(parent.start)
 
-                })
+                    })
 
 
                 Column(modifier = Modifier.constrainAs(LogButton) {
