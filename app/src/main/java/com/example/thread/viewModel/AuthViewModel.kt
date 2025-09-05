@@ -1,6 +1,7 @@
 package com.example.thread.viewModel
 
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.lifecycle.LiveData
@@ -21,6 +22,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 class AuthViewModel : ViewModel() {
+
     private val TAG = "AUTH_VIEW_MODEL"
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance()
@@ -40,14 +42,13 @@ class AuthViewModel : ViewModel() {
     }
 
     // 🔹 Register user
-    @OptIn(UnstableApi::class)
     fun register(
         email: String,
         pass: String,
         name: String,
         username: String,
         bio: String,
-        imageUri: String,
+        imageUri: Uri,
         context: Context
     ) {
         auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
@@ -55,15 +56,14 @@ class AuthViewModel : ViewModel() {
                 val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
                 _firebaseUser.postValue(auth.currentUser)
 
-                // 1. Save user to Firebase without image first
+                // 1. Save user without image first
                 val user = UserModel(email, pass, name, bio, username, "", uid)
                 usersRef.child(uid).setValue(user)
-                Log.d(TAG + 4, imageUri)
 
-                // 2. Upload image to Cloudinary (will update imageUri later)
-                uploadImageToCloud(user.copy(imageUri = imageUri), context)
+                // 2. Upload image to Cloudinary and update DB
+                uploadImageToCloud(user, imageUri, context)
 
-                Toast.makeText(context, "Registration Successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
             } else {
                 _error.postValue(it.exception?.message)
             }
@@ -71,23 +71,23 @@ class AuthViewModel : ViewModel() {
     }
 
     // 🔹 Upload image to Cloudinary & update only imageUri in Firebase
-    fun uploadImageToCloud(userData: UserModel, context: Context) {
-        MediaManager.get().upload(userData.imageUri)
-            .unsigned("Threads") // unsigned preset
+    private fun uploadImageToCloud(userData: UserModel, imageUri: Uri, context: Context) {
+        MediaManager.get().upload(imageUri)
+            .unsigned("Threads") // unsigned preset from Cloudinary
             .option("folder", "Users/${userData.uid}/ProfileImage")
             .callback(object : UploadCallback {
                 override fun onStart(requestId: String) {}
 
                 override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
-                    val progress = (bytes * 100 / totalBytes).toInt()
+                    // optional: progress tracking
                 }
 
                 @OptIn(UnstableApi::class)
                 override fun onSuccess(requestId: String, resultData: Map<Any?, Any?>) {
                     val imageUrl = resultData["secure_url"] as? String ?: ""
+                    Log.d("$TAG-Success", imageUrl)
 
-                    Log.d(TAG + 1, imageUrl)
-
+                    // update only the imageUri field
                     usersRef.child(userData.uid!!).child("imageUri")
                         .setValue(imageUrl)
                         .addOnSuccessListener {
@@ -99,7 +99,6 @@ class AuthViewModel : ViewModel() {
                                 imageUrl,
                                 context
                             )
-                            Log.d(TAG + 2, imageUrl)
                         }
 
                     _uploadState.value = true
@@ -108,12 +107,10 @@ class AuthViewModel : ViewModel() {
                 @OptIn(UnstableApi::class)
                 override fun onError(requestId: String, error: ErrorInfo) {
                     _uploadState.value = false
-                    Log.d(TAG + 3, error.toString())
+                    Log.d("$TAG-Error", error.description)
                 }
 
-                override fun onReschedule(requestId: String, error: ErrorInfo) {
-
-                }
+                override fun onReschedule(requestId: String, error: ErrorInfo) {}
             }).dispatch()
     }
 

@@ -238,7 +238,7 @@ fun Register(navController: NavHostController) {
                         name,
                         username,
                         bio,
-                        imageUri!!.toString(),
+                        imageUri!!,
                         context
                     )
                 }
