@@ -101,4 +101,5 @@ dependencies {
 
     // Cloudinary (Image Hosting)
     implementation("com.cloudinary:cloudinary-android:3.1.1")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
 }

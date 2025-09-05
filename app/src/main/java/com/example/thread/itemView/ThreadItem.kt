@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -28,6 +29,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
+import com.example.thread.utils.formatTimestamp
 
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -46,13 +48,8 @@ fun ThreadItem(
             val (userImage, userName, date, title, image) = createRefs()
 
 
-            val painter = rememberAsyncImagePainter(model = thread.image)
-
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(painter)
-                    .crossfade(true)
-                    .build(),
+                model = users.imageUri,
                 contentDescription = "Logo",
                 modifier = Modifier
                     .constrainAs(userImage) {
@@ -73,6 +70,16 @@ fun ThreadItem(
                         bottom.linkTo(userImage.bottom)
                     })
             }
+
+            Text(
+                text = formatTimestamp(thread.timeStemp.toString()),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium, modifier = Modifier.constrainAs(date) {
+                    top.linkTo(title.top)
+                    bottom.linkTo(title.bottom)
+                    end.linkTo(parent.end, margin = 5.dp)
+                })
+
 
 
             thread.thread?.let {

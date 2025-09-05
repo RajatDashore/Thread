@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
@@ -19,7 +20,12 @@ fun Home(navHostController: NavHostController) {
     val context = LocalContext.current
     val homeViewModel: HomeViewModel = viewModel()
     val TAG = "SHOWIMAGE"
-    val userThreads by homeViewModel.userThreads.observeAsState(emptyList())
+    val userThreads by homeViewModel.userThreads.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        homeViewModel.fetchUsersAndThreads()
+    }
 
 
     LaunchedEffect(Unit) {
@@ -27,20 +33,17 @@ fun Home(navHostController: NavHostController) {
     }
 
     LazyColumn {
-        userThreads.forEach { userWithThreads ->
-            items(userWithThreads.threads) { thread ->
+        items(userThreads) { userWithThreads ->
+            userWithThreads.threads.forEach { thread ->
                 ThreadItem(
-                    thread = thread,
-                    users = userWithThreads.user,
+                    thread,
+                    userWithThreads.user,
                     navHostController,
-                    userId = userWithThreads.user.uid!!
+                    userWithThreads.user.uid!!
                 )
-
             }
-
         }
     }
 
 
 }
-

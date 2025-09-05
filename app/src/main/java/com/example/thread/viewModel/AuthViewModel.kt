@@ -74,7 +74,7 @@ class AuthViewModel : ViewModel() {
                         userData.uid
                     )
 
-                    usersRef.child(userData.uid!!).setValue(user).addOnSuccessListener {
+                    usersRef.child(userData.uid!!).push().setValue(user).addOnSuccessListener {
                         SharedPref.storeData(
                             user.name.toString(),
                             user.email.toString(),
@@ -169,7 +169,7 @@ class AuthViewModel : ViewModel() {
                     auth.currentUser?.uid,
                     context
                 )
-                Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Registration Successfully", Toast.LENGTH_SHORT).show()
             } else {
                 _error.postValue(it.exception?.message)
             }

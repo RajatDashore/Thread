@@ -59,10 +59,12 @@ class AddThreadViewModel(application: Application) : AndroidViewModel(applicatio
                     saveImageToFireBase(thread, userId, imageUrl)
 
                     _uploadState.value = UploadState.Success(imageUrl, publicId)
+                    _isPosted.value = true
                 }
 
                 override fun onError(requestId: String, error: ErrorInfo) {
                     _uploadState.value = UploadState.Error(error.description)
+                    _isPosted.value = false
                 }
 
                 override fun onReschedule(requestId: String, error: ErrorInfo) {
