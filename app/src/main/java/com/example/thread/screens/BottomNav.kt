@@ -12,11 +12,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.thread.model.BottomNavItem
 import com.example.thread.navigation.Routes
@@ -54,14 +56,12 @@ fun BottomNav(navController: NavHostController) {
 
 @Composable
 fun MyBottomBar(navController1: NavHostController) {
-
-    val backStackEntry = navController1.currentBackStackEntry
+    val navBackStackEntry by navController1.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     val list = listOf(
         BottomNavItem("Home", Routes.Home.route, Icons.Rounded.Home),
-        BottomNavItem(
-            "Search", Routes.Search.route, Icons.Rounded.Search
-        ),
+        BottomNavItem("Search", Routes.Search.route, Icons.Rounded.Search),
         BottomNavItem("Add Thread", Routes.AddThread.route, Icons.Rounded.Add),
         BottomNavItem("Notification", Routes.Notification.route, Icons.Rounded.Notifications),
         BottomNavItem("Profile", Routes.Profile.route, Icons.Rounded.Person)
@@ -69,19 +69,19 @@ fun MyBottomBar(navController1: NavHostController) {
 
     BottomAppBar {
         list.forEach {
-            val selected = it.route == backStackEntry?.destination?.route
-
-            NavigationBarItem(selected = selected, onClick = {
-                navController1.navigate(it.route) {
-                    popUpTo(navController1.graph.findStartDestination().id) {
-                        saveState = true
+            NavigationBarItem(
+                selected = currentRoute == it.route,
+                onClick = {
+                    navController1.navigate(it.route) {
+                        popUpTo(navController1.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                    launchSingleTop = true
-                }
-            }, icon = {
-                Icon(imageVector = it.icon, contentDescription = it.title)
-            })
+                },
+                icon = { Icon(imageVector = it.icon, contentDescription = it.title) }
+            )
         }
     }
-
 }

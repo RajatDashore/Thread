@@ -1,5 +1,6 @@
 package com.example.thread.itemView
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +30,7 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
+import com.example.thread.navigation.Routes
 import com.example.thread.utils.formatTimestamp
 
 
@@ -41,7 +43,7 @@ fun ThreadItem(
     userId: String
 ) {
     val context = LocalContext.current
-    var expanded = remember { mutableStateOf(false) }
+    val expanded = remember { mutableStateOf(false) }
 
     Column {
         ConstraintLayout(
@@ -137,14 +139,19 @@ fun ThreadItem(
                         end.linkTo(parent.end)
                     }
                 ) {
-                    Log.d("IMAGE", thread.image)
                     AsyncImage(
                         model = thread.image,   // Cloudinary URL
                         contentDescription = "Thread image",
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
-                            .padding(8.dp),
+                            .padding(8.dp)
+                            .clickable {
+                                val encodedUrl = Uri.encode(thread.image)
+                                val routes =
+                                    Routes.FullImage.route.replace("{imageUrl}", encodedUrl)
+                                navHostController.navigate(routes)
+                            },
                         contentScale = ContentScale.Crop
                     )
                 }

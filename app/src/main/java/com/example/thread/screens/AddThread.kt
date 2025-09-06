@@ -222,7 +222,11 @@ fun AddThread(navHostController: NavHostController) {
             })
 
         TextButton(onClick = {
-            threadViewModel.uploadThread(imageUri!!,thread, FirebaseAuth.getInstance().currentUser!!.uid)
+            threadViewModel.uploadThread(
+                imageUri!!,
+                thread,
+                FirebaseAuth.getInstance().currentUser!!.uid
+            )
 
         }, modifier = Modifier.constrainAs(button) {
             end.linkTo(parent.end)
@@ -251,7 +255,6 @@ fun basicTextFieldWithHint(
         BasicTextField(
             value = value,
             onValueChange = onValuesChange,
-            textStyle = TextStyle.Default.copy(color = Color.Black),
 
             modifier = Modifier.fillMaxWidth()
         )

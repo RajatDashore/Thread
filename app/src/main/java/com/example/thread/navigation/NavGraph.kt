@@ -4,8 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import coil3.Uri
 import com.example.thread.screens.AddThread
 import com.example.thread.screens.BottomNav
+import com.example.thread.screens.FullImage
 import com.example.thread.screens.Home
 import com.example.thread.screens.Login
 import com.example.thread.screens.Notification
@@ -49,7 +51,13 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Routes.OtherUsers.route) {
             val data = it.arguments!!.getString("data")
-            OtherUsers(navController,data)
+            OtherUsers(navController, data)
+        }
+
+        composable(Routes.FullImage.route) { backStackEntry ->
+            val encodedUrl = backStackEntry.arguments?.getString("imageUrl")
+            val imageUrl = encodedUrl?.let { android.net.Uri.decode(it) }
+            FullImage(imageUrl = imageUrl!!, navController)
         }
     }
 

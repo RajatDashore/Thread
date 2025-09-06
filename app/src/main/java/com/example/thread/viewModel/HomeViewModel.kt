@@ -20,8 +20,12 @@ class HomeViewModel : ViewModel() {
     private val _userThreads = MutableStateFlow<List<UserWithThreads>>(emptyList())
     val userThreads: StateFlow<List<UserWithThreads>> = _userThreads
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     fun fetchUsersAndThreads() {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 // 1. Fetch all users
                 val usersSnapshot = usersRef.get().await()
@@ -47,10 +51,12 @@ class HomeViewModel : ViewModel() {
 
                 // 3. Update StateFlow
                 _userThreads.value = resultList
+                _isLoading.value = false
 
             } catch (e: Exception) {
                 e.printStackTrace()
                 _userThreads.value = emptyList()
+                _isLoading.value = false
             }
         }
     }

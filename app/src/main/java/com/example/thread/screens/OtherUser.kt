@@ -73,8 +73,6 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
             userViewModel.fetchUser(uid!!)
             otherUserViewModel.fetchFollowersAndFollowingCounts(uid)
             otherUserViewModel.checkUserStatus(uid)
-
-
         }
     }
 

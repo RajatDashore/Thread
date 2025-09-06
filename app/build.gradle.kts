@@ -88,7 +88,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
-    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
 
@@ -97,9 +97,14 @@ dependencies {
 
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
 
     // Cloudinary (Image Hosting)
     implementation("com.cloudinary:cloudinary-android:3.1.1")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+
+
+    // Shimmer placeholder
+    implementation("com.google.accompanist:accompanist-placeholder-material:0.36.0")
+   // Pull-to-refresh
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.36.0")
 }

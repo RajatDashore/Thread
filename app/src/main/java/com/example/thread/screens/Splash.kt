@@ -37,7 +37,7 @@ fun Splash(navController: NavHostController) {
     }
 
     LaunchedEffect(true) {
-        delay(3000)
+        delay(1000)
         if (FirebaseAuth.getInstance().currentUser != null) {
             navController.navigate(Routes.BottomNav.route)
         } else {

@@ -10,5 +10,6 @@ sealed class Routes(val route: String) {
     object Splash : Routes("splash")
     object AddThread : Routes("addThread")
     object BottomNav : Routes("bottomNav")
-    object OtherUsers:Routes("other_users/{data}")
+    object OtherUsers : Routes("other_users/{data}")
+    object FullImage : Routes("fullImage/{imageUrl}")
 }
