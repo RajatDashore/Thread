@@ -1,10 +1,8 @@
 package com.example.thread.navigation
-
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import coil3.Uri
 import com.example.thread.screens.AddThread
 import com.example.thread.screens.BottomNav
 import com.example.thread.screens.FullImage
@@ -55,10 +53,11 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Routes.FullImage.route) { backStackEntry ->
-            val encodedUrl = backStackEntry.arguments?.getString("imageUrl")
+            val encodedUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
             val imageUrl = encodedUrl?.let { android.net.Uri.decode(it) }
             FullImage(imageUrl = imageUrl!!, navController)
         }
+
     }
 
 

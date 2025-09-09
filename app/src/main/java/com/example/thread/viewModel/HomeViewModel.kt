@@ -1,16 +1,18 @@
 package com.example.thread.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
 import com.example.thread.model.UserWithThreads
 import com.example.thread.utils.Constants
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class HomeViewModel : ViewModel() {
 
@@ -59,5 +61,15 @@ class HomeViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun StoreToken(token: String) {
+        viewModelScope.launch {
+            usersRef.child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(token)
+                .addOnCompleteListener {
+                    Log.d("TOKEN_IN_FIREBASE", "StoreTokenInFireBase:$token ")
+                }
+        }
+
     }
 }

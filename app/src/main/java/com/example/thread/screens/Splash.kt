@@ -17,6 +17,8 @@ import com.example.thread.navigation.Routes
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
+
+val TAG = "SHOW_TOKEN"
 @Composable
 fun Splash(navController: NavHostController) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
@@ -39,7 +41,12 @@ fun Splash(navController: NavHostController) {
     LaunchedEffect(true) {
         delay(1000)
         if (FirebaseAuth.getInstance().currentUser != null) {
-            navController.navigate(Routes.BottomNav.route)
+            navController.navigate(Routes.BottomNav.route) {
+                navController.popBackStack()
+                launchSingleTop = true
+            }
+
+
         } else {
             navController.navigate(Routes.Login.route) {
                 popUpTo(navController.graph.startDestinationId)
@@ -50,3 +57,6 @@ fun Splash(navController: NavHostController) {
 
     }
 }
+
+
+

@@ -67,6 +67,8 @@ dependencies {
     // Media
     implementation(libs.play.services.cast.tv)
     implementation(libs.androidx.media3.common.ktx)
+    // Firebase Messaging
+    implementation(libs.firebase.messaging)
 
     // Testing
     testImplementation(libs.junit)
@@ -89,8 +91,6 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
 
     // Coil (Image Loading)
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
@@ -105,6 +105,15 @@ dependencies {
 
     // Shimmer placeholder
     implementation("com.google.accompanist:accompanist-placeholder-material:0.36.0")
-   // Pull-to-refresh
+    // Pull-to-refresh
     implementation("com.google.accompanist:accompanist-swiperefresh:0.36.0")
+
+
+    // Firebase messaging runtime permission
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+
+
+    //  firebase messaging to send message from own mobile
+    implementation("com.google.firebase:firebase-functions-ktx:21.2.1")
+
 }

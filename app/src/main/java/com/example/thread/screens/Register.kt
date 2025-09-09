@@ -76,19 +76,24 @@ fun Register(navController: NavHostController) {
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
             imageUri = uri
         }
-    val permissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (isGranted) {
-                Toast.makeText(context, "Permission granted", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
-            }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Toast.makeText(context, "Permission granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(
+                context,
+                "Permission has been denied by user. Allow from the setting!!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
+    }
 
     LaunchedEffect(upLoadStatus) {
-        Toast.makeText(context, "Image uploaded in cloudinary", Toast.LENGTH_SHORT).show()
+        if (upLoadStatus.value == true) {
+            Toast.makeText(context, "Image uploaded in cloudinary", Toast.LENGTH_SHORT).show()
+        }
     }
 
 
@@ -111,8 +116,7 @@ fun Register(navController: NavHostController) {
 
         Text(
             text = "Register", style = TextStyle(
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 24.sp
+                fontWeight = FontWeight.ExtraBold, fontSize = 24.sp
             )
         )
 
@@ -130,8 +134,7 @@ fun Register(navController: NavHostController) {
                 .background(Color.LightGray)
                 .clickable {
                     val isGranted = ContextCompat.checkSelfPermission(
-                        context,
-                        permissionToRequest
+                        context, permissionToRequest
                     ) == PackageManager.PERMISSION_GRANTED
 
                     if (isGranted) {
@@ -140,7 +143,8 @@ fun Register(navController: NavHostController) {
                         permissionLauncher.launch(permissionToRequest)
                     }
 
-                }, contentScale = ContentScale.Crop
+                },
+            contentScale = ContentScale.Crop
         )
 
         Box(modifier = Modifier.height(30.dp))
@@ -229,17 +233,20 @@ fun Register(navController: NavHostController) {
         ElevatedButton(
             onClick = {
 
-                if (name.isEmpty() || username.isEmpty() || bio.isEmpty() || email.isEmpty() || password.isEmpty() || imageUri == null) {
+                if (name.isEmpty() || username.isEmpty() || bio.isEmpty() || email.isEmpty() || password.isEmpty()) {
                     Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_SHORT).show()
+                    return@ElevatedButton
+
+                } else if (imageUri == null) {
+                    Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
+                    return@ElevatedButton
+
                 } else {
+                    if (imageUri == null) {
+                        imageUri = null
+                    }
                     authViewModel.register(
-                        email,
-                        password,
-                        name,
-                        username,
-                        bio,
-                        imageUri!!,
-                        context
+                        email, password, name, username, bio, imageUri!!, context
                     )
                 }
 
@@ -249,8 +256,7 @@ fun Register(navController: NavHostController) {
         ) {
             Text(
                 text = "Register", style = TextStyle(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 20.sp
+                    fontWeight = FontWeight.ExtraBold, fontSize = 20.sp
                 ), modifier = Modifier.padding(vertical = 6.dp)
             )
         }

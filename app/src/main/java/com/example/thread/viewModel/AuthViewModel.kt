@@ -7,12 +7,14 @@ import androidx.annotation.OptIn
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.thread.model.UserModel
+import com.example.thread.utils.Constants
 import com.example.thread.utils.SharedPref
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -20,6 +22,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
 
@@ -51,23 +55,28 @@ class AuthViewModel : ViewModel() {
         imageUri: Uri,
         context: Context
     ) {
-        auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
-            if (it.isSuccessful) {
-                val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
-                _firebaseUser.postValue(auth.currentUser)
+        viewModelScope.launch {
+            auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
+                    _firebaseUser.postValue(auth.currentUser)
 
-                // 1. Save user without image first
-                val user = UserModel(email, pass, name, bio, username, "", uid)
-                usersRef.child(uid).setValue(user)
+                    // 1. Save user without image first
+                    val user = UserModel(email, pass, name, bio, username, "", uid)
+                    usersRef.child(uid).setValue(user)
 
-                // 2. Upload image to Cloudinary and update DB
-                uploadImageToCloud(user, imageUri, context)
+                    // 2. Upload image to Cloudinary and update DB
+                    uploadImageToCloud(user, imageUri, context)
+                    saveUserFcmToken()
+                    subscribeUserToTopic()
 
-                Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
-            } else {
-                _error.postValue(it.exception?.message)
+                    Toast.makeText(context, "Registration Successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    _error.postValue(it.exception?.message)
+                }
             }
         }
+
     }
 
     // 🔹 Upload image to Cloudinary & update only imageUri in Firebase
@@ -147,6 +156,35 @@ class AuthViewModel : ViewModel() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
+
+
+    @OptIn(UnstableApi::class)
+    fun saveUserFcmToken() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.d(TAG, "Fetching FCM token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+            val database = FirebaseDatabase.getInstance().reference
+            database.child(Constants.USERS).child(uid).child("Token").setValue(token)
+        }
+    }
+
+    fun subscribeUserToTopic() {
+        FirebaseMessaging.getInstance().subscribeToTopic("global")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "User subscribed to global topic")
+                } else {
+                    Log.e("FCM", "Subscription failed", task.exception)
+                }
+            }
+    }
+
 
     // 🔹 Logout user
     fun logout() {

@@ -19,8 +19,8 @@ class UserViewModel : ViewModel() {
     private val _threads = MutableLiveData(listOf<ThreadModel>())
     val threads: LiveData<List<ThreadModel>> get() = _threads
 
-    private val _users = MutableLiveData(UserModel())
-    val users: LiveData<UserModel> get() = _users
+    private val _users = MutableLiveData<UserModel?>()
+    val users: LiveData<UserModel?> get() = _users
 
 
     fun fetchUser(uid: String) {
@@ -31,7 +31,7 @@ class UserViewModel : ViewModel() {
             }
 
             override fun onCancelled(p0: DatabaseError) {
-                TODO("Not yet implemented")
+
             }
 
         })
