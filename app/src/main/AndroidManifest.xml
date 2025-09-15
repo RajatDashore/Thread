@@ -18,9 +18,9 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/thread_logo"
+        android:icon="@drawable/threads"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/thread_logo"
+        android:roundIcon="@drawable/threads"
         android:supportsRtl="true"
         android:theme="@style/Theme.Thread"
         android:usesCleartextTraffic="true"
@@ -52,7 +52,7 @@
             android:value="@string/default_notification_channel_id" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/thread_logo" />
+            android:resource="@drawable/threads" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorPrimary" />

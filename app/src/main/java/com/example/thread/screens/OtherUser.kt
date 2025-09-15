@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.thread.R
+import com.example.thread.itemView.PostProfile
 import com.example.thread.navigation.Routes
 import com.example.thread.viewModel.AuthViewModel
 import com.example.thread.viewModel.OtherUserViewModel
@@ -198,7 +199,7 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
 
         if (otherPost.isNotEmpty()) {
             Text(
-                text = "Posts",
+                text = "Threads",
                 modifier = Modifier.padding(2.dp),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.thread.screens
 
 import android.annotation.SuppressLint
@@ -21,6 +23,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -42,7 +46,9 @@ import com.example.thread.viewModel.HomeViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.shimmer
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.firebase.Firebase
@@ -53,11 +59,10 @@ import com.google.firebase.messaging.messaging
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun Home(navHostController: NavHostController) {
-    val context = LocalContext.current
+    LocalContext.current
     val homeViewModel: HomeViewModel = viewModel()
     val userThreads by homeViewModel.userThreads.collectAsState()
-    var isLoading = homeViewModel.isLoading.collectAsState()
-    var isRefreshing by remember { mutableStateOf(false) }
+    val isLoading: State<Boolean> = homeViewModel.isLoading.collectAsState()
     val openDialog = remember { mutableStateOf(false) }
     val notificationPermissionState = rememberPermissionState(
         permission = android.Manifest.permission.POST_NOTIFICATIONS
@@ -79,7 +84,7 @@ fun Home(navHostController: NavHostController) {
         }
     }
 
-    var listState = rememberLazyListState(
+    val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = 0,
         initialFirstVisibleItemScrollOffset = 0
     )
@@ -91,12 +96,8 @@ fun Home(navHostController: NavHostController) {
         }
     }
 
-    // Update loading state
-    LaunchedEffect(userThreads) {
-        if (isLoading.value) isRefreshing = false
-    }
 
-    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading.value)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -119,68 +120,94 @@ fun Home(navHostController: NavHostController) {
 
         SwipeRefresh(
             state = swipeRefreshState, onRefresh = {
-                isRefreshing = true
                 homeViewModel.fetchUsersAndThreads()
             }) {
-            if (isLoading.value) {
-                // 🔹 Show shimmer placeholders while loading
+            if (isLoading.value && userThreads.isEmpty()) {
                 LazyColumn {
                     items(5) { SkeletonThreadItem() }
                 }
             } else {
-                isRefreshing = false
-                // 🔹 Show real feed
                 LazyColumn(state = listState) {
-                    items(userThreads, key = { it.user.uid ?: "" }) { userWithThreads ->
-                        userWithThreads.threads.forEach { thread ->
+                    userThreads.forEach { userWithThreads ->
+                        items(
+                            userWithThreads.threads,
+                            key = { thread -> thread.threadId!! }
+                        ) { thread ->
                             ThreadItem(
-                                thread,
-                                userWithThreads.user,
-                                navHostController,
-                                userWithThreads.user.uid!!
+                                thread = thread,
+                                users = userWithThreads.user,
+                                navHostController = navHostController,
+                                userId = userWithThreads.user.uid ?: ""
                             )
                         }
                     }
                 }
+
             }
         }
     }
 
 
 }
-
 @Composable
 fun SkeletonThreadItem() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(vertical = 5.dp)
     ) {
-        // Fake profile row
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        // 🔹 Profile row
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Profile image placeholder
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
                     .placeholder(
-                        visible = true, color = Color.LightGray,
-                        // highlight = shimmer(),
-                        shape = CircleShape
+                        visible = true,
+                        color = Color.LightGray,
+                        shape = CircleShape,
+                        highlight = PlaceholderHighlight.shimmer(
+                            highlightColor = Color.White.copy(alpha = 0.6f)
+                        )
                     )
+
             )
             Spacer(modifier = Modifier.width(12.dp))
+
+            // Username placeholder
             Box(
                 modifier = Modifier
                     .height(20.dp)
                     .width(120.dp)
                     .placeholder(
                         visible = true,
-                        color = Color.LightGray,
-                        //   highlight = shimmer()
+                        color = Color.LightGray
                     )
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Date placeholder
+            Box(
+                modifier = Modifier
+                    .height(14.dp)
+                    .width(60.dp)
+                    .placeholder(
+                        visible = true,
+                        color = Color.LightGray,
+                        shape = CircleShape,
+                        highlight = PlaceholderHighlight.shimmer(
+                            highlightColor = Color.White.copy(alpha = 0.6f)
+                        )
+                    )
+
+            )
         }
+
         Spacer(modifier = Modifier.height(12.dp))
-        // Fake text
+
+        // 🔹 Thread text placeholder
         Box(
             modifier = Modifier
                 .height(18.dp)
@@ -188,20 +215,71 @@ fun SkeletonThreadItem() {
                 .placeholder(
                     visible = true,
                     color = Color.LightGray,
-                    // highlight = shimmer()
+                    shape = CircleShape,
+                    highlight = PlaceholderHighlight.shimmer(
+                        highlightColor = Color.White.copy(alpha = 0.6f)
+                    )
                 )
+
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
+        // 🔹 Optional thread image placeholder (full width, like final UI)
         Box(
             modifier = Modifier
-                .height(150.dp)
                 .fillMaxWidth()
+                .height(230.dp)
                 .placeholder(
                     visible = true,
                     color = Color.LightGray,
-                    //  highlight = shimmer()
+                    highlight = PlaceholderHighlight.shimmer(
+                        highlightColor = Color.White.copy(alpha = 0.6f)
+                    )
                 )
+
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 🔹 Like row placeholder
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .placeholder(
+                        visible = true,
+                        color = Color.LightGray,
+                        shape = CircleShape,
+                        highlight = PlaceholderHighlight.shimmer(
+                            highlightColor = Color.White.copy(alpha = 0.6f)
+                        )
+                    )
+
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .height(12.dp)
+                    .width(40.dp)
+                    .placeholder(
+                        visible = true,
+                        color = Color.LightGray,
+                        shape = CircleShape,
+                        highlight = PlaceholderHighlight.shimmer(
+                            highlightColor = Color.White.copy(alpha = 0.6f)
+                        )
+                    )
+
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
     }
 }
-

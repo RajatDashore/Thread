@@ -24,6 +24,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +43,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.thread.R
+import com.example.thread.dialogs.LogOutDialog
+import com.example.thread.itemView.PostProfile
 import com.example.thread.itemView.ThreadItem
 import com.example.thread.model.UserModel
 import com.example.thread.navigation.Routes
@@ -65,6 +69,7 @@ fun Profile(navHostController: NavHostController) {
     val postViewModel: PostProfileViewModel = viewModel()
     val post by postViewModel.post.collectAsState()
     val context = LocalContext.current
+    val openDialog = remember { mutableStateOf(false) }
 
     val user = UserModel(
         name = SharedPref.getName(context),
@@ -185,13 +190,25 @@ fun Profile(navHostController: NavHostController) {
 
                         ElevatedButton(
                             onClick = {
-                                authViewModel.logout()
-                                SharedPref.removeUserInfoFormSharedPref(context)
-                                RemoveAllCacheImage()
+                                openDialog.value = true
                             }, modifier = Modifier.padding(top = 5.dp)
                         ) {
                             Text("Logout", color = Color.Blue)
                         }
+
+
+                        LogOutDialog(
+                            openDialog = openDialog,
+                            "Logout",
+                            "Do you really want to Logout?",
+                            onConfirm = {
+                                authViewModel.logout()
+                                SharedPref.removeUserInfoFormSharedPref(context)
+                                RemoveAllCacheImage()
+                            },
+                            onDismiss = {
+                                openDialog.value = false
+                            })
 
                         Box(modifier = Modifier.height(8.dp))
                         Box(
@@ -218,7 +235,7 @@ fun Profile(navHostController: NavHostController) {
 
         if (post.isNotEmpty()) {
             Text(
-                text = "Posts",
+                text = "Threads",
                 modifier = Modifier.padding(2.dp),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
@@ -237,4 +254,7 @@ fun Profile(navHostController: NavHostController) {
 
 
 }
+
+
+
 

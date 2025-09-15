@@ -1,10 +1,12 @@
 package com.example.thread.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.google.firebase.database.IgnoreExtraProperties
 
+@IgnoreExtraProperties
 data class BottomNavItem(
-    val title: String,
-    val route : String,
-    val icon: ImageVector
+    var title: String = "",
+    var route: String = "",
+    var icon: ImageVector
 
 )

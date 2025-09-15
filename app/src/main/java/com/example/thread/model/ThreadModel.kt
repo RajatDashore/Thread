@@ -1,10 +1,12 @@
 package com.example.thread.model
 
-import android.net.Uri
+import com.google.firebase.database.IgnoreExtraProperties
 
+@IgnoreExtraProperties
 data class ThreadModel(
-    val thread: String? = "",
-    val image: String? = null,
-    val userId: String? = "",
-    val timeStemp: String? = ""
+    val threadId: String? = null,
+    var thread: String? = null,
+    var image: String? = null,
+    var userId: String? = null,
+    var timeStemp: String? = null,
 )

@@ -67,7 +67,7 @@ class AddThreadViewModel : ViewModel() {
     @OptIn(UnstableApi::class)
     private fun saveImageToFireBase(thread: String, userId: String?, imageUri: String) {
         val threadData =
-            ThreadModel(thread, imageUri, userId, System.currentTimeMillis().toString())
+            ThreadModel("", thread, imageUri, userId, System.currentTimeMillis().toString())
         usersRef.child(userId!!).child(Constants.THREADS).push().setValue(threadData)
             .addOnCompleteListener {
 

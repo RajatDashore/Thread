@@ -33,7 +33,7 @@ android {
 
     buildTypes {
         release {
-            //     isMinifyEnabled = true
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -99,7 +99,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
     // Cloudinary (Image Hosting)
-    implementation("com.cloudinary:cloudinary-android:3.1.1")
+    implementation("com.cloudinary:cloudinary-android:3.1.1") {
+        exclude(group = "com.github.bumptech.glide")
+        exclude(group = "com.squareup.picasso")
+    }
+
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
 
 
@@ -115,5 +119,4 @@ dependencies {
 
     //  firebase messaging to send message from own mobile
     implementation("com.google.firebase:firebase-functions-ktx:21.2.1")
-
 }

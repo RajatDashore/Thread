@@ -59,7 +59,7 @@ class PushNotificationService : FirebaseMessagingService() {
         )
         var notificationBuilder: NotificationCompat.Builder =
             NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(message.title)
-                .setContentText(message.body).setSmallIcon(R.drawable.thread_logo)
+                .setContentText(message.body).setSmallIcon(R.drawable.thread)
                 .setAutoCancel(true).setVibrate(longArrayOf(1000, 1000, 1000, 1000))
                 .setOnlyAlertOnce(true).setContentIntent(pendingIntent)
 

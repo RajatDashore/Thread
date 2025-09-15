@@ -7,7 +7,7 @@ import com.google.firebase.functions.FirebaseFunctions
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
+import java.util.concurrent.TimeUnit
 
 val TAG = "Utils"
 fun formatTimestamp(timestamp: String): String {
@@ -17,6 +17,52 @@ fun formatTimestamp(timestamp: String): String {
         .withZone(ZoneId.systemDefault())
     return formatter.format(instant)
 }
+
+
+fun getTimeAgo(timestampString: String?): String {
+    if (timestampString.isNullOrEmpty()) return "Just now"
+
+    return try {
+        val timestamp = timestampString.toLongOrNull() ?: return "Just now"
+        val now = System.currentTimeMillis()
+
+        if (timestamp > now || timestamp <= 0) return "Just now"
+
+        val diff = now - timestamp
+
+        when {
+            diff < TimeUnit.MINUTES.toMillis(1) -> "Just now"
+            diff < TimeUnit.HOURS.toMillis(1) -> {
+                val minutes = TimeUnit.MILLISECONDS.toMinutes(diff)
+                "$minutes minute${if (minutes > 1) "s" else ""}"
+            }
+
+            diff < TimeUnit.DAYS.toMillis(1) -> {
+                val hours = TimeUnit.MILLISECONDS.toHours(diff)
+                "$hours hour${if (hours > 1) "s" else ""}"
+            }
+
+            diff < TimeUnit.DAYS.toMillis(30) -> {
+                val days = TimeUnit.MILLISECONDS.toDays(diff)
+                "$days day${if (days > 1) "s" else ""}"
+            }
+
+            diff < TimeUnit.DAYS.toMillis(365) -> {
+                val months = TimeUnit.MILLISECONDS.toDays(diff) / 30
+                "$months month${if (months > 1) "s" else ""}"
+            }
+
+            else -> {
+                val years = TimeUnit.MILLISECONDS.toDays(diff) / 365
+                "$years year${if (years > 1) "s" else ""}"
+            }
+        }
+    } catch (e: Exception) {
+        "Just now"
+    }
+}
+
+
 
 
 fun RemoveAllCacheImage() {

@@ -6,15 +6,18 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -23,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,7 +54,6 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.thread.R
 import com.example.thread.application.ThreadApplication
-import com.example.thread.navigation.Routes
 import com.example.thread.utils.SharedPref
 import com.example.thread.viewModel.AddThreadViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -60,6 +62,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun AddThread(navHostController: NavHostController) {
     val context = LocalContext.current
     val threadViewModel: AddThreadViewModel = viewModel()
+
     val isPosted by threadViewModel.isPosted.observeAsState(false)
     var thread by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -86,6 +89,7 @@ fun AddThread(navHostController: NavHostController) {
         android.Manifest.permission.READ_EXTERNAL_STORAGE
     }
 
+    // Reset state after post
     LaunchedEffect(isPosted) {
         if (isPosted) {
             thread = ""
@@ -100,108 +104,99 @@ fun AddThread(navHostController: NavHostController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        val (crossPic, titleText, logo, userName, editText, attachMedia, replyText, button, imageBox) = createRefs()
+        val (headerRow, inputSection, attachMedia, button, imageBox) = createRefs()
 
-        // Close button
-        Image(
-            painter = painterResource(id = R.drawable.baseline_close_24),
-            contentDescription = "Close",
-            modifier = Modifier
-                .constrainAs(crossPic) { top.linkTo(parent.top); start.linkTo(parent.start) }
-                .clickable {
-                    navHostController.navigate(Routes.Home.route) {
-                        popUpTo(Routes.AddThread.route) { inclusive = true }
-                    }
-                }
-        )
-
-        // Title
-        Text(
-            text = "Add Thread",
-            style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 24.sp),
-            modifier = Modifier.constrainAs(titleText) {
-                top.linkTo(crossPic.top)
-                start.linkTo(crossPic.end, margin = 12.dp)
-                bottom.linkTo(crossPic.bottom)
+        // 🔹 Header (close + title)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.constrainAs(headerRow) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
             }
-        )
-
-        // User Logo
-        AsyncImage(
-            model = SharedPref.getImage(context),
-            imageLoader = ThreadApplication.imageLoader,
-            contentDescription = "Logo",
-            modifier = Modifier
-                .constrainAs(logo) {
-                    top.linkTo(titleText.bottom)
-                    start.linkTo(parent.start)
-                }
-                .size(36.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
-
-        // User Name
-        Text(
-            text = SharedPref.getUserName(context),
-            style = TextStyle(fontSize = 20.sp),
-            modifier = Modifier.constrainAs(userName) {
-                top.linkTo(logo.top)
-                start.linkTo(logo.end, margin = 12.dp)
-                bottom.linkTo(logo.bottom)
-            }
-        )
-
-        // Thread input
-        basicTextFieldWithHint(
-            hint = "Start a thread...",
-            value = thread,
-            onValuesChange = { thread = it },
-            modifier = Modifier
-                .constrainAs(editText) {
-                    top.linkTo(userName.bottom)
-                    start.linkTo(userName.start)
-                }
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-        )
-
-        // Attach Media / Show attached image
-        if (imageUri == null) {
-            Image(
-                painter = painterResource(id = R.drawable.baseline_attach_file_24),
-                contentDescription = "Attach file",
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_close_24),
+                contentDescription = "Close",
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
-                    .constrainAs(attachMedia) { top.linkTo(editText.bottom); start.linkTo(editText.start) }
-                    .size(25.dp)
+                    .size(28.dp)
                     .clickable {
-                        val isGranted = ContextCompat.checkSelfPermission(
-                            context,
-                            permissionToRequest
-                        ) == PackageManager.PERMISSION_GRANTED
-                        if (isGranted) {
-                            launcher.launch("image/*")
-                        } else {
-                            permissionLauncher.launch(permissionToRequest)
-                        }
-                    }, colorFilter = ColorFilter.tint(color = Color.White)
+                        navHostController.popBackStack()
+                    }
             )
-        } else {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "Add Thread",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
+        // 🔹 Profile + Text Input
+        Row(
+            modifier = Modifier.constrainAs(inputSection) {
+                top.linkTo(headerRow.bottom, margin = 24.dp)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            },
+            verticalAlignment = Alignment.Top
+        ) {
+            // Profile Image
+            AsyncImage(
+                model = SharedPref.getImage(context)?.takeIf { it.isNotBlank() }
+                    ?: R.drawable.baseline_person_24,
+                imageLoader = ThreadApplication.imageLoader,
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                // Username
+                Text(
+                    text = SharedPref.getUserName(context)?.ifBlank { "Guest" } ?: "Guest",
+                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Thread input
+                basicTextFieldWithHint(
+                    hint = "What's on your mind?",
+                    value = thread.orEmpty(),
+                    onValuesChange = { thread = it },
+                    modifier = Modifier
+                        .padding(vertical = 6.dp)
+                )
+            }
+        }
+
+        // 🔹 Attached Image
+        if (imageUri != null) {
             Box(
                 modifier = Modifier
-                    .background(Color.Gray)
-                    .padding(8.dp)
+                    .padding(top = 12.dp)
                     .constrainAs(imageBox) {
-                        top.linkTo(editText.bottom)
+                        top.linkTo(inputSection.bottom, margin = 12.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
                     .height(250.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(Color.Gray.copy(alpha = 0.2f))
             ) {
                 AsyncImage(
                     model = imageUri,
                     imageLoader = ThreadApplication.imageLoader,
-                    placeholder = painterResource(R.drawable.baseline_person_24),
-                    error = painterResource(R.drawable.baseline_person_24),
                     contentDescription = "Attached image",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -212,47 +207,85 @@ fun AddThread(navHostController: NavHostController) {
                     tint = Color.White,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.6f))
                         .clickable { imageUri = null }
                 )
             }
+        } else {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_attach_file_24),
+                contentDescription = "Attach file",
+                tint = Color.Gray,
+                modifier = Modifier
+                    .constrainAs(attachMedia) {
+                        top.linkTo(inputSection.bottom, margin = 16.dp)
+                        start.linkTo(inputSection.start)
+                    }
+                    .size(26.dp)
+                    .clickable {
+                        val isGranted = ContextCompat.checkSelfPermission(
+                            context,
+                            permissionToRequest
+                        ) == PackageManager.PERMISSION_GRANTED
+                        if (isGranted) {
+                            launcher.launch("image/*")
+                        } else {
+                            permissionLauncher.launch(permissionToRequest)
+                        }
+                    }
+            )
         }
 
-        // Reply text
-        Text(
-            text = "Anyone can reply",
-            style = TextStyle(fontSize = 20.sp),
-            modifier = Modifier.constrainAs(replyText) {
-                start.linkTo(parent.start, margin = 12.dp)
-                bottom.linkTo(parent.bottom, margin = 12.dp)
-            }
-        )
 
-        // Post button
+        // 🔹 Post Button
         TextButton(
             onClick = {
-                if (count.value == 1) {
-                    threadViewModel.uploadThread(
-                        imageUri!!,
-                        SharedPref.getUserName(context),
-                        thread,
-                        FirebaseAuth.getInstance().currentUser!!.uid
-                    )
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                val safeThread = thread.orEmpty()
+                val safeUserName = SharedPref.getUserName(context)?.ifBlank { "Guest" } ?: "Guest"
+
+                if (imageUri != null && safeThread.isNotBlank() && currentUser != null) {
+                    if (count.value == 1) {
+                        threadViewModel.uploadThread(
+                            imageUri!!,
+                            safeUserName,
+                            safeThread,
+                            currentUser.uid
+                        )
+                    }
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Please select an image and write thread",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 ++count.value
-            }, enabled = !isUploading,
+            },
+            enabled = !isUploading,
             modifier = Modifier.constrainAs(button) {
                 end.linkTo(parent.end)
-                bottom.linkTo(parent.bottom)
+                bottom.linkTo(parent.bottom, margin = 16.dp)
             }
         ) {
             if (isUploading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.primary
                 )
             } else {
-                Text(text = "Post", style = TextStyle(fontSize = 20.sp))
+                Text(
+                    text = "Post",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
             }
         }
     }
@@ -271,8 +304,9 @@ fun basicTextFieldWithHint(
             Text(hint, style = LocalTextStyle.current.copy(color = textColor.copy(alpha = 0.6f)))
         }
         BasicTextField(
-            value = value,
-            onValueChange = onValuesChange,
+            value =
+                value,
+            onValueChange = { onValuesChange(it.orEmpty()) },
             modifier = Modifier.fillMaxWidth(),
             textStyle = LocalTextStyle.current.copy(color = textColor)
         )

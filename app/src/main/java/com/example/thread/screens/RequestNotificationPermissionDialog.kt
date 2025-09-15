@@ -27,7 +27,7 @@ fun RequestNotificationPermissionDialog(
             text = { Text("This app requires notification permission to show notification") },
             icon = {
                 Icon(
-                    painter = painterResource(R.drawable.thread_logo),
+                    painter = painterResource(R.drawable.thread),
                     contentDescription = ""
                 )
             }, confirmButton = {

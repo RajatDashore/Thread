@@ -35,12 +35,12 @@ import com.example.thread.viewModel.SearchViewModel
 
 @Composable
 fun Search(navHostController: NavHostController) {
-    val context = LocalContext.current
+    LocalContext.current
     val searchViewModel: SearchViewModel = viewModel()
     val userList by searchViewModel.usersList.observeAsState(null)
     var search by remember { mutableStateOf("") }
 
-    Column() {
+    Column {
         Text(
             text = "Search", style = TextStyle(
                 fontWeight = FontWeight.ExtraBold,

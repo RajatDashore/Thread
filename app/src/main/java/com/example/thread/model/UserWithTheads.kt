@@ -1,6 +1,9 @@
 package com.example.thread.model
 
+import com.google.firebase.database.IgnoreExtraProperties
+
+@IgnoreExtraProperties
 data class UserWithThreads(
-    val user: UserModel,
-    val threads: List<ThreadModel>
+    var user: UserModel,
+    var threads: List<ThreadModel>
 )

@@ -174,6 +174,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    @OptIn(UnstableApi::class)
     fun subscribeUserToTopic() {
         FirebaseMessaging.getInstance().subscribeToTopic("global")
             .addOnCompleteListener { task ->

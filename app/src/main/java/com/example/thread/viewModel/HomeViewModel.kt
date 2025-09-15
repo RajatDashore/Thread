@@ -1,13 +1,11 @@
 package com.example.thread.viewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
 import com.example.thread.model.UserWithThreads
 import com.example.thread.utils.Constants
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,31 +43,28 @@ class HomeViewModel : ViewModel() {
                         .get()
                         .await()
 
-                    val threads = threadsSnapshot.children.mapNotNull {
-                        it.getValue(ThreadModel::class.java)
+                    val threads = threadsSnapshot.children.mapNotNull { threadsSnapshot ->
+                        val thread = threadsSnapshot.getValue(ThreadModel::class.java)
+                        thread?.copy(threadId = threadsSnapshot.key!!)
                     }
                     UserWithThreads(user, threads)
                 }
 
                 // 3. Update StateFlow
                 _userThreads.value = resultList
-                _isLoading.value = false
 
             } catch (e: Exception) {
                 e.printStackTrace()
                 _userThreads.value = emptyList()
                 _isLoading.value = false
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
-    fun StoreToken(token: String) {
-        viewModelScope.launch {
-            usersRef.child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(token)
-                .addOnCompleteListener {
-                    Log.d("TOKEN_IN_FIREBASE", "StoreTokenInFireBase:$token ")
-                }
-        }
+
+    fun getUserLikes() {
 
     }
 }

@@ -38,27 +38,26 @@ class SearchViewModel : ViewModel() {
 
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
             }
 
         })
     }
 
 
-    fun fetchUserFromThread(thread: ThreadModel, onResult: (UserModel) -> Unit) {
-        db.getReference("Users").child(thread.userId!!)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val user = snapshot.getValue(UserModel::class.java)
-                    user?.let(onResult)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    TODO("Not yet implemented")
-                }
-
-            })
-    }
+//    fun fetchUserFromThread(thread: ThreadModel, onResult: (UserModel) -> Unit) {
+//        db.getReference("Users").child(thread.userId!!)
+//            .addListenerForSingleValueEvent(object : ValueEventListener {
+//                override fun onDataChange(snapshot: DataSnapshot) {
+//                    val user = snapshot.getValue(UserModel::class.java)
+//                    user?.let(onResult)
+//                }
+//
+//                override fun onCancelled(error: DatabaseError) {
+//                    TODO("Not yet implemented")
+//                }
+//
+//            })
+//    }
 
 }
 
