@@ -55,6 +55,7 @@ import coil3.compose.AsyncImage
 import com.example.thread.R
 import com.example.thread.application.ThreadApplication
 import com.example.thread.utils.SharedPref
+import com.example.thread.utils.sendBroadCastNotification
 import com.example.thread.viewModel.AddThreadViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -244,7 +245,7 @@ fun AddThread(navHostController: NavHostController) {
         TextButton(
             onClick = {
                 val currentUser = FirebaseAuth.getInstance().currentUser
-                val safeThread = thread.orEmpty()
+                val safeThread = thread
                 val safeUserName = SharedPref.getUserName(context)?.ifBlank { "Guest" } ?: "Guest"
 
                 if (imageUri != null && safeThread.isNotBlank() && currentUser != null) {
@@ -255,6 +256,7 @@ fun AddThread(navHostController: NavHostController) {
                             safeThread,
                             currentUser.uid
                         )
+                        sendBroadCastNotification("Thread", safeUserName)
                     }
                 } else {
                     Toast.makeText(

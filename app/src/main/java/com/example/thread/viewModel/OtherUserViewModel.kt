@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thread.model.OtherUserModel
 import com.example.thread.model.ThreadModel
+import com.example.thread.model.UserModel
 import com.example.thread.utils.Constants
 import com.example.thread.utils.sendNotificationToOneUser
 import com.google.firebase.auth.FirebaseAuth
@@ -17,13 +18,13 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class OtherUserViewModel : ViewModel() {
     private val db = FirebaseDatabase.getInstance()
     private val thread = db.getReference("Threads")
     private val userRef = db.getReference("Users")
-    private val followersRef = db.getReference("Followers")
-    private val followingRef = db.getReference("Following")
+
     private val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
 
     // LiveData for follower and following counts
@@ -40,100 +41,82 @@ class OtherUserViewModel : ViewModel() {
     private val _isFollowing = MutableLiveData<Boolean>()
     val isFollowing: MutableLiveData<Boolean> = _isFollowing
 
+    private var userModel = UserModel()
 
-    fun doFollow(uid: String, otherUserName: String, date: String, context: Context) {
 
-        val otherUser = OtherUserModel(uid, otherUserName, date)
+    fun followToggle(
+        otherUid: String, otherUserName: String, date: String, context: Context
+    ) {
+        viewModelScope.launch {
 
-        followingRef.child(currentUserUid!!).child(uid)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        Toast.makeText(context, "Already following", Toast.LENGTH_SHORT).show()
-                    } else {
-                        // Add to 'Following' of current user
-                        followingRef.child(currentUserUid!!).child(uid)
-                            .setValue(otherUser)
-                            .addOnSuccessListener {
-                                // Add to 'Followers' of the target user
-                                val followerUser = OtherUserModel(currentUserUid, "You", date)
-                                followersRef.child(uid).child(currentUserUid)
-                                    .setValue(followerUser)
-                                    .addOnSuccessListener {
-                                        val token: String = getToken()!!
-                                        sendNotificationToOneUser(
-                                            token,
-                                            "Thread",
-                                            "One user has started following you"
-                                        )
-                                        Toast.makeText(
-                                            context,
-                                            "You have started following $otherUserName",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                    }
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                    }
-                }
+            val otherUser = OtherUserModel(otherUid, otherUserName, date)
 
-                private fun getToken(): String? {
-                    userRef.child(uid).child("Token").get().addOnSuccessListener { snapshot ->
-                        val token = snapshot.getValue(String::class.java)
-                        if (token != null) {
-                            return@addOnSuccessListener
-                        }
-                    }
-                    return ""
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
+            val refFollowing =
+                userRef.child(currentUserUid!!).child(Constants.FOLLOWING).child(otherUid)
+            val snapshot = refFollowing.get().await()
+            if (snapshot.exists()) {
+                refFollowing.removeValue().await()
+                _isFollowing.postValue(false)
+                Toast.makeText(
+                    context, "You have been unfollowed $otherUserName", Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                refFollowing.setValue(true).await()
+                _isFollowing.postValue(false)
+                Toast.makeText(
+                    context, "You have been started to follow $otherUserName", Toast.LENGTH_SHORT
+                ).show()
+            }
+
+
+            val refFollower =
+                userRef.child(otherUid).child(Constants.FOLLWERS).child(currentUserUid)
+            val snapshot2 = refFollower.get().await()
+            if (snapshot2.exists()) {
+                refFollower.removeValue().await()
+                sendNotificationToOneUser(
+                    getToken(otherUid)!!, "Thread", "${userModel.name} has unfollowed  you"
+                )
+            } else {
+                refFollower.setValue(true)
+                sendNotificationToOneUser(
+                    getToken(otherUid)!!, "Thread", "${userModel.name} has started following you"
+                )
+            }
+        }
     }
 
 
-    fun checkUserStatus(uid: String) {
-        followingRef.child(currentUserUid!!).child(uid)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    _isFollowing.value = snapshot.exists()
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    _isFollowing.value = false
-                }
-            })
+    private fun getToken(otherUid: String): String? {
+        userRef.child(otherUid).child(Constants.TOKEN).get().addOnSuccessListener { snapshot ->
+            val token = snapshot.getValue(String::class.java)
+            if (token != null) {
+                return@addOnSuccessListener
+            }
+        }
+        return ""
     }
 
 
-    fun fetchFollowersAndFollowingCounts(uid: String) {
-        // Fetch follower count
-        followersRef.child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                _followerCount.value = snapshot.childrenCount.toInt()
+    fun fetchFollowersAndFollowingCounts(otherUid: String) {
+        viewModelScope.launch {
+            try {
+                val followingRef = userRef.child(otherUid).child(Constants.FOLLOWING)
+                val snapshot = followingRef.get().await()
+                snapshot.children.mapNotNull { count ->
+                    _followingCount.postValue(snapshot.childrenCount.toInt())
+                }
+                val followerRef = userRef.child(otherUid).child(Constants.FOLLWERS)
+                val snapshot2 = followerRef.get().await()
+                snapshot2.children.mapNotNull { count ->
+                    _followerCount.postValue(snapshot2.childrenCount.toInt())
+                }
+            } catch (e: Exception) {
+                _followerCount.postValue(0)
+                _followingCount.postValue(0)
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                _followerCount.value = 0
-            }
-        })
-
-        // Fetch following count
-        followingRef.child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                _followingCount.value = snapshot.childrenCount.toInt()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                _followingCount.value = 0
-            }
-        })
+        }
     }
 
 
@@ -159,6 +142,20 @@ class OtherUserViewModel : ViewModel() {
 
                 })
         }
+    }
+
+
+    fun getUserStatus(otherUid: String) {
+        viewModelScope.launch {
+            val ref = userRef.child(currentUserUid!!).child(Constants.FOLLOWING).child(otherUid)
+            val snapshot = ref.get().await()
+            if (snapshot.exists()) {
+
+            } else {
+
+            }
+        }
+
     }
 
 

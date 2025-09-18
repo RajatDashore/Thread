@@ -3,8 +3,8 @@ package com.example.thread.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -31,6 +31,10 @@ class SearchViewModel : ViewModel() {
                 val result = mutableListOf<UserModel>()
                 for (threadsnapshot in snapshot.children) {
                     val thread = threadsnapshot.getValue(UserModel::class.java)
+                    if (thread?.uid == FirebaseAuth.getInstance().currentUser!!.uid) {
+                        continue
+                    }
+
                     result.add(thread!!)
                 }
                 onResult(result)
@@ -42,22 +46,6 @@ class SearchViewModel : ViewModel() {
 
         })
     }
-
-
-//    fun fetchUserFromThread(thread: ThreadModel, onResult: (UserModel) -> Unit) {
-//        db.getReference("Users").child(thread.userId!!)
-//            .addListenerForSingleValueEvent(object : ValueEventListener {
-//                override fun onDataChange(snapshot: DataSnapshot) {
-//                    val user = snapshot.getValue(UserModel::class.java)
-//                    user?.let(onResult)
-//                }
-//
-//                override fun onCancelled(error: DatabaseError) {
-//                    TODO("Not yet implemented")
-//                }
-//
-//            })
-//    }
 
 }
 

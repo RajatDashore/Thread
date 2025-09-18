@@ -42,7 +42,6 @@ import com.example.thread.navigation.Routes
 import com.example.thread.viewModel.AuthViewModel
 import com.example.thread.viewModel.OtherUserViewModel
 import com.example.thread.viewModel.UserViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
@@ -73,7 +72,7 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
             userViewModel.fetchThread(uid!!)
             userViewModel.fetchUser(uid!!)
             otherUserViewModel.fetchFollowersAndFollowingCounts(uid)
-            otherUserViewModel.checkUserStatus(uid)
+            //  otherUserViewModel.checkUserStatus(uid)
             otherUserViewModel.getUserPost(uid!!)
         }
     }
@@ -162,24 +161,15 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
 
                         ElevatedButton(
                             onClick = {
-                                if (FirebaseAuth.getInstance().currentUser!!.uid == uid) {
-                                    authViewModel.logout()
-                                } else {
-                                    otherUserViewModel.doFollow(
-                                        uid!!,
-                                        users!!.username.toString(),
+                                otherUserViewModel.followToggle(
+                                    otherUid = uid!!,
+                                    users!!.name.toString(),
                                         System.currentTimeMillis().toString(),
                                         context
-                                    )
-                                    otherUserViewModel.checkUserStatus(uid) // update follow status after action
-                                }
+                                )
                             }, modifier = Modifier.padding(top = 5.dp)
                         ) {
                             when {
-                                FirebaseAuth.getInstance().currentUser!!.uid == uid -> Text(
-                                    "Logout", color = Color.Blue
-                                )
-
                                 isFollowing -> Text("Unfollow", color = Color.Blue)
                                 else -> Text("Follow", color = Color.Blue)
                             }

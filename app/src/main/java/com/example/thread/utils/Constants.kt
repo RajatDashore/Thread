@@ -5,4 +5,9 @@ object Constants {
     const val USERS = "Users"
     const val LIKES = "Likes"
     const val COMMENTS = "Comments"
+
+    const val TOKEN = "Token"
+
+    const val FOLLWERS = "Followers"
+    const val FOLLOWING = "Following"
 }
