@@ -72,7 +72,7 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
             userViewModel.fetchThread(uid!!)
             userViewModel.fetchUser(uid!!)
             otherUserViewModel.fetchFollowersAndFollowingCounts(uid)
-            //  otherUserViewModel.checkUserStatus(uid)
+            otherUserViewModel.checkUserStatus(uid)
             otherUserViewModel.getUserPost(uid!!)
         }
     }
@@ -169,9 +169,10 @@ fun OtherUsers(navHostController: NavHostController, uid: String?) {
                                 )
                             }, modifier = Modifier.padding(top = 5.dp)
                         ) {
-                            when {
-                                isFollowing -> Text("Unfollow", color = Color.Blue)
-                                else -> Text("Follow", color = Color.Blue)
+                            if (isFollowing) {
+                                Text(text = "Unfollow", color = Color.Blue)
+                            } else {
+                                Text(text = "Follow", color = Color.Blue)
                             }
                         }
 

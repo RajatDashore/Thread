@@ -45,43 +45,54 @@ class OtherUserViewModel : ViewModel() {
 
 
     fun followToggle(
-        otherUid: String, otherUserName: String, date: String, context: Context
+        otherUid: String,
+        otherUserName: String,
+        date: String,
+        context: Context
     ) {
         viewModelScope.launch {
-
             val otherUser = OtherUserModel(otherUid, otherUserName, date)
-
 
             val refFollowing =
                 userRef.child(currentUserUid!!).child(Constants.FOLLOWING).child(otherUid)
             val snapshot = refFollowing.get().await()
-            if (snapshot.exists()) {
-                refFollowing.removeValue().await()
-                _isFollowing.postValue(false)
-                Toast.makeText(
-                    context, "You have been unfollowed $otherUserName", Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                refFollowing.setValue(true).await()
-                _isFollowing.postValue(false)
-                Toast.makeText(
-                    context, "You have been started to follow $otherUserName", Toast.LENGTH_SHORT
-                ).show()
-            }
-
 
             val refFollower =
                 userRef.child(otherUid).child(Constants.FOLLWERS).child(currentUserUid)
             val snapshot2 = refFollower.get().await()
-            if (snapshot2.exists()) {
+
+            if (snapshot.exists() && snapshot2.exists()) {
+
+                refFollowing.removeValue().await()
                 refFollower.removeValue().await()
+                _isFollowing.postValue(false)
+
+                Toast.makeText(
+                    context,
+                    "You have unfollowed $otherUserName",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 sendNotificationToOneUser(
-                    getToken(otherUid)!!, "Thread", "${userModel.name} has unfollowed  you"
+                    getToken(otherUid)!!,
+                    "Thread",
+                    "${userModel.name} has unfollowed you"
                 )
             } else {
-                refFollower.setValue(true)
+                refFollowing.setValue(true).await()
+                refFollower.setValue(true).await()
+                _isFollowing.postValue(true)
+
+                Toast.makeText(
+                    context,
+                    "You are now following $otherUserName",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 sendNotificationToOneUser(
-                    getToken(otherUid)!!, "Thread", "${userModel.name} has started following you"
+                    getToken(otherUid)!!,
+                    "Thread",
+                    "${userModel.name} has started following you"
                 )
             }
         }
@@ -145,17 +156,12 @@ class OtherUserViewModel : ViewModel() {
     }
 
 
-    fun getUserStatus(otherUid: String) {
+    fun checkUserStatus(otherUid: String) {
         viewModelScope.launch {
             val ref = userRef.child(currentUserUid!!).child(Constants.FOLLOWING).child(otherUid)
             val snapshot = ref.get().await()
-            if (snapshot.exists()) {
-
-            } else {
-
-            }
+            _isFollowing.postValue(snapshot.exists()) // true if following
         }
-
     }
 
 
