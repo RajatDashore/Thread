@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
@@ -45,7 +44,6 @@ import coil3.compose.AsyncImage
 import com.example.thread.R
 import com.example.thread.dialogs.LogOutDialog
 import com.example.thread.itemView.PostProfile
-import com.example.thread.itemView.ThreadItem
 import com.example.thread.model.UserModel
 import com.example.thread.navigation.Routes
 import com.example.thread.utils.RemoveAllCacheImage
@@ -222,14 +220,16 @@ fun Profile(navHostController: NavHostController) {
 
                 }
             }
-            items(threads ?: emptyList()) { pair ->
-                ThreadItem(
-                    thread = pair,
-                    users = user,
-                    navHostController = navHostController,
-                    userId = SharedPref.getUserName(context)
-                )
-            }
+            /*  items(threads ?: emptyList()) { pair ->
+                  ThreadItem(
+                      thread = pair,
+                      users = user,
+                      navHostController = navHostController,
+                      userId = SharedPref.getUserName(context)
+                  )
+              }
+
+             */
 
         }
 

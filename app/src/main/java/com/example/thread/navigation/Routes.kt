@@ -12,4 +12,5 @@ sealed class Routes(val route: String) {
     object BottomNav : Routes("bottomNav")
     object OtherUsers : Routes("other_users/{data}")
     object FullImage : Routes("fullImage/{imageUrl}")
+    object Comment : Routes("comment/{otherUid}/{threadId}")
 }

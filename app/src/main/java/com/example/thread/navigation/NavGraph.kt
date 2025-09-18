@@ -1,10 +1,14 @@
 package com.example.thread.navigation
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.thread.screens.AddThread
 import com.example.thread.screens.BottomNav
+import com.example.thread.screens.Comment
 import com.example.thread.screens.FullImage
 import com.example.thread.screens.Home
 import com.example.thread.screens.Login
@@ -16,6 +20,7 @@ import com.example.thread.screens.Search
 import com.example.thread.screens.Splash
 
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(navController, Routes.Splash.route) {
@@ -56,6 +61,18 @@ fun NavGraph(navController: NavHostController) {
             val encodedUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
             val imageUrl = encodedUrl?.let { android.net.Uri.decode(it) }
             FullImage(imageUrl = imageUrl!!, navController)
+        }
+
+        composable(Routes.Comment.route) { backStackEntry ->
+            val otherUid = backStackEntry.arguments?.getString("otherUid")
+            val threadId = backStackEntry.arguments?.getString("threadId")
+
+            Comment(
+                navHostController = navController,
+                otherUid = otherUid!!,
+                threadId = threadId!!,
+                homeViewModel = viewModel()
+            )
         }
 
     }

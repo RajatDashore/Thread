@@ -1,7 +1,6 @@
 package com.example.thread.itemView
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -12,14 +11,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -41,15 +42,20 @@ import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
 import com.example.thread.navigation.Routes
 import com.example.thread.utils.getTimeAgo
+import com.google.firebase.auth.FirebaseAuth
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun ThreadItem(
-    thread: ThreadModel, users: UserModel, navHostController: NavHostController, userId: String
+    thread: ThreadModel,
+    users: UserModel,
+    navHostController: NavHostController,
+    userId: String,
+    onLikeClicked: () -> Unit
 ) {
     val context = LocalContext.current
     val expanded = remember { mutableStateOf(false) }
-    var likes: String by remember { mutableStateOf("") }
+    var isLiked = thread.Likes.containsKey(FirebaseAuth.getInstance().currentUser!!.uid)
 
     Column(
         modifier = Modifier
@@ -61,7 +67,6 @@ fun ThreadItem(
         ) {
             val (userImage, userName, date, title, readMore, image, likeRow) = createRefs()
 
-            // 🔹 User profile image
             AsyncImage(
                 model = users.imageUri,
                 contentDescription = "Profile",
@@ -88,7 +93,6 @@ fun ThreadItem(
                     modifier = Modifier.constrainAs(userName) {
                         start.linkTo(userImage.end, margin = 8.dp)
                         top.linkTo(userImage.top)
-                        bottom.linkTo(userImage.bottom)
                     })
             }
 
@@ -113,6 +117,7 @@ fun ThreadItem(
                     modifier = Modifier.constrainAs(title) {
                         top.linkTo(userName.bottom, margin = 5.dp)
                         start.linkTo(userName.start)
+                        bottom.linkTo(userImage.bottom)
                         end.linkTo(parent.end, margin = 8.dp)
                         width = androidx.constraintlayout.compose.Dimension.fillToConstraints
                     })
@@ -151,7 +156,7 @@ fun ThreadItem(
                         }
                         .constrainAs(image) {
                             top.linkTo(title.bottom, margin = 8.dp)
-                            start.linkTo(parent.start)
+                            start.linkTo(parent.start, margin = 2.dp)
                             end.linkTo(parent.end)
                         },
                     contentScale = ContentScale.Crop
@@ -170,32 +175,40 @@ fun ThreadItem(
                     }, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
 
-                Image(
-                    painter = painterResource(R.drawable.heart_red_svgrepo_com),
+                Icon(
+                    imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = "Likes", modifier = Modifier
                         .size(20.dp)
                         .clickable {
-                            Toast.makeText(context, "Liked the thread", Toast.LENGTH_SHORT).show()
-                        }
+                            onLikeClicked()
+                        }, tint = if (isLiked) Color.Red else Color.Gray
                 )
                 Spacer(Modifier.size(6.dp))
+
                 Text(
-                    text = likes, fontSize = 13.sp, fontWeight = FontWeight.SemiBold
+                    text = thread.likeCount.toString(),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
 
                 Spacer(Modifier.size(15.dp))
 
                 Image(
                     painter = painterResource(R.drawable.comment),
-                    contentDescription = "Comment",
-                    modifier = Modifier.size(20.dp),
+                    contentDescription = "Comment", modifier = Modifier
+                        .size(20.dp)
+                        .clickable {
+                            navHostController.navigate("comment/${thread.userId}/${thread.threadId}")
+                        },
                     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onSurface)
                 )
 
                 Spacer(Modifier.size(6.dp))
 
                 Text(
-                    text = likes, fontSize = 13.sp, fontWeight = FontWeight.SemiBold
+                    text = thread.commentCount.toString(),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
 
             }
