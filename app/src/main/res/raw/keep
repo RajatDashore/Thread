@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/*,@raw/*,@layout/*,@xml/*,@mipmap/*,@color/*,@anim/*,@font/*"
+    tools:discard="">
+    <!--
+        Keeps:
+        - All drawable, raw, layout, xml, mipmap, color, anim, and font resources
+        - These are needed for Coil3, Cloudinary, Firebase dynamic references, etc.
+    -->
+</resources>

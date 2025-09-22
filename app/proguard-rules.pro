@@ -8,17 +8,21 @@
 # Keep Kotlin metadata (needed for reflection, serialization, Compose)
 -keep class kotlin.Metadata { *; }
 
-# Jetpack Compose (needed for previews & runtime reflection)
+# Jetpack Compose (previews & runtime reflection)
 -keep class androidx.compose.** { *; }
 -dontwarn androidx.compose.**
+
+# Keep Compose @Composable functions
+-keep class androidx.compose.runtime.** { *; }
 
 #####################################
 # Firebase
 #####################################
 
-# Keep Firebase models (Firestore/Realtime DB needs no-arg constructors)
--keepclassmembers class com.example.thread.models.** {
+# Keep Firebase Realtime DB model classes (no-arg constructors & public fields)
+-keepclassmembers class com.example.thread.model.** {
     public <init>();
+    <fields>;
 }
 
 # Keep Firebase SDK classes
@@ -32,16 +36,14 @@
 #####################################
 # Coil / Coil3
 #####################################
-
 -keep class coil.** { *; }
 -keep class coil3.** { *; }
 -dontwarn coil.**
 -dontwarn coil3.**
 
-#####################################ō
+#####################################
 # Cloudinary
 #####################################
-
 -keep class com.cloudinary.** { *; }
 -dontwarn com.cloudinary.**
 
@@ -56,14 +58,12 @@
 #####################################
 # Google Play Services / Maps
 #####################################
-
 -keep class com.google.android.gms.** { *; }
 -dontwarn com.google.android.gms.**
 
 #####################################
-# Gson / Moshi (if you use JSON parsing)
+# Gson / Moshi / JSON
 #####################################
-
 -keep class com.google.gson.** { *; }
 -keep class com.squareup.moshi.** { *; }
 -dontwarn com.google.gson.**
@@ -72,7 +72,6 @@
 #####################################
 # Retrofit / OkHttp / Ktor
 #####################################
-
 -keep class retrofit2.** { *; }
 -dontwarn retrofit2.**
 -keep class okhttp3.** { *; }
@@ -83,24 +82,30 @@
 #####################################
 # Lottie
 #####################################
-
 -keep class com.airbnb.lottie.** { *; }
 -dontwarn com.airbnb.lottie.**
 
 #####################################
-# Room (if you use it)
+# Room
 #####################################
-
 -keep class androidx.room.** { *; }
 -dontwarn androidx.room.**
 
 #####################################
-# Your App Models
+# Your App Classes / Activities / ViewModels
 #####################################
+-keep class com.example.thread.viewModel.** { *; }
+-keep class com.example.thread.screens.** { *; }
+-keep class com.example.thread.application.** { *; }
+-keep class com.example.thread.utils.** { *; }
+-keep class com.example.thread.navigation.** { *; }
+-keep class com.example.thread.itemView.** { *; }
+-keep class com.example.thread.ui.** { *; }
+-keep class com.example.thread.MainActivity { *; }
 
-# Ensure all model classes keep constructors for Firebase/Room/JSON
--keepclassmembers class com.example.thread.model.** {
-    public <init>();
-    <fields>;
+#####################################
+# Firebase dynamic fields / maps
+#####################################
+-keepclassmembers class * {
+    @com.google.firebase.database.PropertyName <fields>;
 }
-

@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
-    kotlin("plugin.serialization") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.20"
 }
 
 android {
@@ -13,6 +13,7 @@ android {
     defaultConfig {
         applicationId = "com.example.thread"
         minSdk = 29
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -30,6 +31,14 @@ android {
         )
 
     }
+
+    /* packagingOptions {
+         jniLibs {
+             keepDebugSymbols = false
+         }
+     }
+
+     */
 
     buildTypes {
         release {

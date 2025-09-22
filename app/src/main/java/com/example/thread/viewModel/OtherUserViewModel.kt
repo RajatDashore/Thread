@@ -5,11 +5,11 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.thread.model.NotificationModel
 import com.example.thread.model.OtherUserModel
 import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
 import com.example.thread.utils.Constants
-import com.example.thread.utils.sendNotificationToOneUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -73,15 +73,28 @@ class OtherUserViewModel : ViewModel() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                sendNotificationToOneUser(
+                sendNotificationByFirebase(
+                    otherUid,
+                    "${userModel.name} has unfollowed you",
+                    userModel.imageUri!!
+                )
+
+                /*sendNotificationToOneUser(
                     getToken(otherUid)!!,
                     "Thread",
                     "${userModel.name} has unfollowed you"
                 )
+
+                 */
             } else {
                 refFollowing.setValue(true).await()
                 refFollower.setValue(true).await()
                 _isFollowing.postValue(true)
+                sendNotificationByFirebase(
+                    otherUid,
+                    "${userModel.name} has followed you",
+                    userModel.imageUri!!
+                )
 
                 Toast.makeText(
                     context,
@@ -89,13 +102,26 @@ class OtherUserViewModel : ViewModel() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                sendNotificationToOneUser(
-                    getToken(otherUid)!!,
-                    "Thread",
-                    "${userModel.name} has started following you"
-                )
+                /*  sendNotificationToOneUser(
+                      getToken(otherUid)!!,
+                      "Thread",
+                      "${userModel.name} has started following you"
+                  )
+                 */
             }
         }
+    }
+
+
+    fun sendNotificationByFirebase(otherUid: String, message: String, image: String) {
+        val notification = NotificationModel(
+            FirebaseAuth.getInstance().currentUser!!.uid,
+            message,
+            System.currentTimeMillis().toString(),
+            image
+        )
+        FirebaseDatabase.getInstance().getReference(Constants.USERS).child(otherUid)
+            .child(Constants.NOTIFICATION).push().setValue(notification)
     }
 
 

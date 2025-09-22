@@ -3,6 +3,9 @@ package com.example.thread.utils
 
 import android.util.Log
 import com.example.thread.application.ThreadApplication
+import com.example.thread.model.NotificationModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.functions.FirebaseFunctions
 import java.time.Instant
 import java.time.ZoneId
@@ -65,6 +68,8 @@ fun getTimeAgo(timestampString: String?): String {
 
 
 
+
+
 fun RemoveAllCacheImage() {
     ThreadApplication().ClearAllCacheImages()
 }
@@ -89,7 +94,7 @@ fun sendBroadCastNotification(title: String, body: String) {
         "title" to title, "body" to body
     )
 
-    FirebaseFunctions.getInstance().getHttpsCallable("sendGloblaNotification").call(data)
+    FirebaseFunctions.getInstance().getHttpsCallable("sendGlobalNotification").call(data)
         .addOnSuccessListener {
             Log.d(TAG, "sendBroadCastNotification: Message Sent ")
         }.addOnFailureListener {

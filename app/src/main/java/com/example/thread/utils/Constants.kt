@@ -10,4 +10,5 @@ object Constants {
 
     const val FOLLWERS = "Followers"
     const val FOLLOWING = "Following"
+    const val NOTIFICATION = "Notification"
 }

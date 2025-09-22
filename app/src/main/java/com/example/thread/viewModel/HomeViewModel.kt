@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thread.model.CommentModel
 import com.example.thread.model.CommentWithUser
+import com.example.thread.model.NotificationModel
 import com.example.thread.model.ThreadModel
 import com.example.thread.model.UserModel
 import com.example.thread.model.UserWithThreads
 import com.example.thread.utils.Constants
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -18,12 +20,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class HomeViewModel : ViewModel() {
-
+    private val user = UserModel()
     private val db = FirebaseDatabase.getInstance()
     private val usersRef = db.getReference(Constants.USERS)
 
     private val _userThreads = MutableStateFlow<List<UserWithThreads>>(emptyList())
     val userThreads: StateFlow<List<UserWithThreads>> = _userThreads
+
 
     private val _userComment = MutableStateFlow<List<CommentWithUser>>(emptyList())
     val userComment: StateFlow<List<CommentWithUser>> = _userComment
@@ -86,12 +89,35 @@ class HomeViewModel : ViewModel() {
             val snapshot = likeRef.get().await()
             if (snapshot.exists()) {
                 likeRef.removeValue().await()
+
             } else {
                 likeRef.setValue(true).await()
+                if (user.imageUri == null) {
+                    sendNotificationByFirebase(
+                        otherUserId, "${user.name} has liked your post", ""
+                    )
+                } else {
+                    sendNotificationByFirebase(
+                        otherUserId, "${user.name} has liked your post", user.imageUri!!
+                    )
+                }
             }
 
         }
     }
+
+
+    fun sendNotificationByFirebase(otherUid: String, message: String, image: String) {
+        val notification = NotificationModel(
+            FirebaseAuth.getInstance().currentUser!!.uid,
+            message,
+            System.currentTimeMillis().toString(),
+            image
+        )
+        FirebaseDatabase.getInstance().getReference(Constants.USERS).child(otherUid)
+            .child(Constants.NOTIFICATION).push().setValue(notification)
+    }
+
 
 
     fun addComment(otherUid: String, currentUid: String, threadId: String, comment: String) {
@@ -107,6 +133,16 @@ class HomeViewModel : ViewModel() {
                 System.currentTimeMillis().toString()
             )
             commentRef.setValue(comment).await()
+
+            if (user.imageUri == null) {
+                sendNotificationByFirebase(
+                    otherUid, "${user.name} has commented on your post", ""
+                )
+            } else {
+                sendNotificationByFirebase(
+                    otherUid, "${user.name} has commented on your post", user.imageUri!!
+                )
+            }
         }
     }
 
@@ -136,7 +172,7 @@ class HomeViewModel : ViewModel() {
             }
 
             override fun onCancelled(p0: DatabaseError) {
-                TODO("Not yet implemented")
+
             }
 
         })

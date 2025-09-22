@@ -55,7 +55,7 @@ fun ThreadItem(
 ) {
     val context = LocalContext.current
     val expanded = remember { mutableStateOf(false) }
-    var isLiked = thread.Likes.containsKey(FirebaseAuth.getInstance().currentUser!!.uid)
+    var isLiked = thread.Likes!!.containsKey(FirebaseAuth.getInstance().currentUser!!.uid)
 
     Column(
         modifier = Modifier
